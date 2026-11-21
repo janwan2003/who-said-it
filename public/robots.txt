@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /g/
+Disallow: /api/
+Sitemap: https://pb-who-said-it.pages.dev/sitemap.xml

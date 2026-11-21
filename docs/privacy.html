@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy · Penname</title>
+  <meta name="description" content="What Penname stores and for how long.">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="wrap legal">
+    <header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="">Penname</a></header>
+    <h1>Privacy</h1>
+    <p class="muted">Last updated 21 November 2026.</p>
+    <p>Penname is a group game that works without accounts. We store only what the game needs.</p>
+    <h2>What we store</h2>
+    <ul>
+      <li><b>Groups:</b> the group name and the time zone of the person who created it (so the daily question changes at local midnight).</li>
+      <li><b>Players:</b> the nickname you choose and a random secret key. Your browser keeps the key so you stay signed in to the group; we store only a one-way hash of it.</li>
+      <li><b>Answers and guesses</b> you submit in the game.</li>
+      <li><b>Abuse protection:</b> a short-lived counter per IP address to rate-limit requests. It is deleted when its one-hour window ends.</li>
+    </ul>
+    <p>We do not ask for your email, phone number or real name. There are no ads, no tracking cookies and no third-party analytics.</p>
+    <h2>Who can see what</h2>
+    <p>Answers are shown without names until the reveal. After the reveal, everyone in the group can see who wrote each answer and who guessed what. Anyone with the group link can join the group, so share it only with people you want to play with.</p>
+    <h2>How long we keep it</h2>
+    <p>A group and everything in it is deleted automatically after 120 days without play. The person who created a group can delete it at any time from the group's Settings. Leaving a group removes you from it; your past answers stay in that group's history.</p>
+    <h2>Where it runs</h2>
+    <p>Penname is hosted on Cloudflare (Pages, Functions and D1 database).</p>
+    <h2>Contact</h2>
+    <p>Questions or deletion requests: open an issue at <a href="https://github.com/janwan2003/who-said-it/issues">github.com/janwan2003/who-said-it</a>.</p>
+    <footer><p><b>About:</b> Penname is a small independent web game. · <a href="index.html">Home</a></p></footer>
+  </div>
+</body>
+</html>

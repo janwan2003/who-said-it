@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Penname · The daily “who said it?” game for your group chat</title>
+  <meta name="description" content="One question a day for your friends, family or team. Everyone answers anonymously, then you guess who said what. Free, works in the browser, no app and no sign-up.">
+  <link rel="canonical" href="https://pb-who-said-it.pages.dev/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Penname">
+  <meta property="og:title" content="Penname · Guess who said it">
+  <meta property="og:description" content="One question a day. Everyone answers anonymously, then you guess who said what. No app, no sign-up.">
+  <meta property="og:image" content="https://pb-who-said-it.pages.dev/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:url" content="https://pb-who-said-it.pages.dev/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#f7f4ee">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon-180.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+  <div class="wrap wide">
+    <header class="top">
+      <a class="logo" href="/"><img src="/icon.svg" alt="">Penname</a>
+      <a class="btn quiet" href="#how">How it works</a>
+    </header>
+
+    <section class="hero hero-grid">
+      <div>
+        <h1>Everyone answers. Nobody signs. Guess who said it.</h1>
+        <p class="lead">One question a day for your friends, family or team. Answers show up without names, and you match each one to the person who wrote it. Takes two minutes, starts a lot of conversations.</p>
+
+        <form id="create" class="card" autocomplete="off">
+          <h2>Start a group</h2>
+          <div class="field">
+            <label for="gname">Group name</label>
+            <input id="gname" type="text" maxlength="40" placeholder="e.g. The Kowalskis, Team Rocket, Flat 4B" required>
+          </div>
+          <div class="field">
+            <label for="nick">Your nickname</label>
+            <input id="nick" type="text" maxlength="24" placeholder="What your group calls you" required>
+          </div>
+          <button class="btn block" type="submit">Create group and get the link</button>
+          <p class="error" id="err" role="alert"></p>
+          <p class="small muted" style="margin:0">Free. No app, no account, no email. You'll get one link to paste in your group chat.</p>
+        </form>
+      </div>
+
+      <div class="card demo" aria-label="Example round">
+        <span class="pill">Today's question</span>
+        <div class="q">What's the strangest thing in your fridge right now?</div>
+        <div class="ans">“A single pickled egg from 2023. We don't talk about it.”
+          <div class="who"><span class="chip">Mum</span><span class="chip on">Kuba</span><span class="chip">Ola</span></div>
+        </div>
+        <div class="ans">“Seven half-used jars of mustard.”
+          <div class="who"><span class="chip on">Mum</span><span class="chip">Kuba</span><span class="chip">Ola</span></div>
+        </div>
+        <div class="ans">“My phone charger. Again.”
+          <div class="who"><span class="chip">Mum</span><span class="chip">Kuba</span><span class="chip on">Ola</span></div>
+        </div>
+        <p class="small muted" style="margin:6px 0 0">Tap who you think wrote each one. Points for spotting your friends, and for fooling them.</p>
+      </div>
+    </section>
+
+    <section id="how">
+      <h2>How it works</h2>
+      <div class="steps">
+        <div class="step"><b>1</b><h3>Share one link</h3><p class="muted" style="margin:0">Create a group and paste the link in your chat. Friends open it, pick a nickname and they're in. No downloads.</p></div>
+        <div class="step"><b>2</b><h3>Answer today's question</h3><p class="muted" style="margin:0">Everyone gets the same question each day and answers in secret. Nobody sees the answers until everyone has written one.</p></div>
+        <div class="step"><b>3</b><h3>Guess who said what</h3><p class="muted" style="margin:0">Match each answer to its author. When everyone has guessed, the names are revealed, with points, a weekly table and streaks.</p></div>
+      </div>
+    </section>
+
+    <section class="faq">
+      <h2>Questions</h2>
+      <details><summary>Does everyone need to install something?</summary><p>No. Penname runs in the browser on any phone or computer. Opening the link in WhatsApp, Messenger, iMessage, Slack or Discord is enough.</p></details>
+      <details><summary>How many people can play?</summary><p>From 3 to 30 people per group. It works best with 4 to 10.</p></details>
+      <details><summary>What if someone doesn't answer?</summary><p>Guessing starts by itself when everyone has answered. If someone is slow, anyone who has answered can start the guessing once 3 answers are in. Latecomers sit that round out.</p></details>
+      <details><summary>Is it really anonymous?</summary><p>Until the reveal, nobody can see who wrote what, including the person who made the group. After everyone has guessed, the names are shown to the group. That's the game.</p></details>
+      <details><summary>Does it cost anything?</summary><p>No. There are no ads and nothing to buy.</p></details>
+    </section>
+
+    <footer>
+      <p><b>About:</b> Penname is a small independent web game. · <a href="/privacy">Privacy</a></p>
+    </footer>
+  </div>
+  <script src="/common.js"></script>
+  <script src="/home.js"></script>
+</body>
+</html>

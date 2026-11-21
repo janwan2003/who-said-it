@@ -1,0 +1,14 @@
+{
+  "name": "who-said-it",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler pages dev public --port 8817",
+    "test:unit": "node --test tests/unit/*.test.js",
+    "test:e2e": "node tests/e2e/run.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0",
+    "playwright-core": "^1.50.0"
+  }
+}
