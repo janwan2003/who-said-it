@@ -8,11 +8,15 @@
   let justCreated = params.get('new') === '1';
 
   // A personal link (#k=token) signs this device in, then the token leaves the URL.
-  const hash = new URLSearchParams(location.hash.slice(1));
-  if (hash.get('k')) {
-    store.set(id, hash.get('k'));
+  // Also handled on hashchange: pasting the personal link into a tab already on this group only changes the hash.
+  function takeHashToken() {
+    const k = new URLSearchParams(location.hash.slice(1)).get('k');
+    if (!k) return false;
+    store.set(id, k);
     history.replaceState(null, '', location.pathname + location.search);
+    return true;
   }
+  takeHashToken();
   if (justCreated) history.replaceState(null, '', location.pathname);
   let token = store.get(id);
 
@@ -22,6 +26,8 @@
   let editing = false;
   let picks = {}; // aid -> member id while guessing
   let openDay = null;
+  let settingsOpen = false;
+  let shownDay = null; // resets drafts and picks when the day rolls over
   const pastCache = {};
   const groupUrl = () => `${location.origin}/g/${id}`;
 
@@ -36,6 +42,8 @@
       if (!force && active && (active.tagName === 'TEXTAREA' || active.tagName === 'INPUT')) return;
       lastJson = j;
       S = data;
+      if (shownDay && shownDay !== S.today.day) { editing = false; draft = ''; picks = {}; openDay = null; }
+      shownDay = S.today.day;
       render();
     } catch (e) {
       if (e.status === 404) return notFound(e.message);
@@ -192,15 +200,15 @@
     const det = top('correct');
     const mys = top('fooled');
     const awards = det.max > 0 || mys.max > 0 ? `<div class="awards">
-      ${det.max > 0 ? `<div class="award"><span class="big">🕵️</span><b>${det.who}</b><span class="small muted">Best detective · ${det.max} right</span></div>` : ''}
-      ${mys.max > 0 ? `<div class="award"><span class="big">🎭</span><b>${mys.who}</b><span class="small muted">Hardest to spot · fooled ${mys.max}</span></div>` : ''}
+      ${det.max > 0 ? `<div class="award"><span class="big">🕵️</span><b>${det.who}</b><span class="small muted">Best detective</span><span class="small muted">${det.max} ${det.max === 1 ? 'answer' : 'answers'} right</span></div>` : ''}
+      ${mys.max > 0 ? `<div class="award"><span class="big">🎭</span><b>${mys.who}</b><span class="small muted">Hardest to spot</span><span class="small muted">fooled ${mys.max} ${mys.max === 1 ? 'person' : 'people'}</span></div>` : ''}
     </div>` : '';
     const answers = r.answers.map((a) => `<div class="ans">“${esc(a.text)}”
       <div class="author">${avatar({ id: a.author, name: a.authorName })}${esc(a.authorName)}${a.author === meId ? ' <span class="pill grey">you</span>' : ''}</div>
-      ${a.guesses.length ? `<div class="verdicts">${a.guesses.map((g) => `<span class="v ${g.right ? 'right' : 'wrong'}">${esc(g.byName)}: ${g.right ? '✓' : esc(g.saidName)}</span>`).join('')}</div>` : ''}
+      ${a.guesses.length ? `<div class="verdicts">${a.guesses.map((g) => (g.right ? `<span class="v right">${esc(g.byName)} ✓</span>` : `<span class="v wrong">${esc(g.byName)} guessed ${esc(g.saidName)}</span>`)).join('')}</div>` : ''}
     </div>`).join('');
     const board = scores.length ? `<h3 style="margin-top:16px">Points today</h3><table class="board">${scores.map((s) =>
-      `<tr><td>${esc(s.name)}</td><td class="small muted">${s.correct} spotted · fooled ${s.fooled}</td><td class="num">${s.points}</td></tr>`).join('')}</table>` : '';
+      `<tr><td><span class="row" style="gap:8px;flex-wrap:nowrap">${avatar(s)}${esc(s.name)}</span></td><td class="small muted">${s.correct} spotted · fooled ${s.fooled}</td><td class="num">${s.points}</td></tr>`).join('')}</table>` : '';
     return awards + answers + board;
   }
 
@@ -242,7 +250,7 @@
   }
 
   function settingsCard() {
-    return `<details class="card flat"><summary><b>Settings</b></summary>
+    return `<details class="card flat settings" id="settings"${settingsOpen ? ' open' : ''}><summary><b>Settings</b></summary>
       <form id="rename" class="row" style="margin-top:14px" autocomplete="off"><input class="grow" style="flex:1 1 160px" id="newnick" type="text" maxlength="24" value="${esc(S.me.name)}" aria-label="Your nickname">
         <button class="btn soft" type="submit">Rename</button></form>
       <p class="small muted" style="margin:14px 0 6px">Playing on another phone or computer? Open your personal link there. Keep it to yourself: it signs in as you.</p>
@@ -293,6 +301,8 @@
         else btn.disabled = false;
       };
     }
+    const st = document.getElementById('settings');
+    if (st) st.ontoggle = () => { settingsOpen = st.open; };
     const rn = document.getElementById('rename');
     if (rn) rn.onsubmit = async (e) => {
       e.preventDefault();
@@ -350,8 +360,22 @@
 
   if (!/^[A-Za-z0-9]{6,16}$/.test(id)) notFound('This link looks broken.');
   else {
-    load(true);
-    setInterval(() => { if (document.visibilityState === 'visible') load(false); }, 12000);
-    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') load(false); });
+    // Poll often while waiting on other people, rarely when nothing can change soon. Paused in background tabs.
+    const pollDelay = () => {
+      if (!S || !S.me) return 30000;
+      const t = S.today;
+      if (t.state === 'reveal') return 60000;
+      if (t.state === 'answer' && !t.myAnswer) return 30000;
+      return 10000;
+    };
+    let timer;
+    const tick = async () => {
+      clearTimeout(timer);
+      if (document.visibilityState === 'visible') await load(false);
+      timer = setTimeout(tick, pollDelay());
+    };
+    load(true).then(() => { timer = setTimeout(tick, pollDelay()); });
+    window.addEventListener('hashchange', () => { if (takeHashToken()) { token = store.get(id); load(true); } });
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') tick(); });
   }
 })();

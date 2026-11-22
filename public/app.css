@@ -95,7 +95,19 @@ input[type=text]:focus, textarea:focus { border-color: var(--brand); box-shadow:
 .faq summary { cursor: pointer; font-weight: 700; }
 .faq details p { margin: 10px 0 0; color: var(--muted); }
 footer { padding: 32px 0 48px; color: var(--muted); font-size: .9rem; }
+footer p { margin: 0 0 6px; }
 footer a { color: var(--muted); }
+.foot-links { display: flex; flex-wrap: wrap; gap: 4px 18px; }
+
+/* Disclosure rows (FAQ, settings) with a chevron instead of the browser triangle */
+.faq summary, .settings > summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.faq summary::-webkit-details-marker, .settings > summary::-webkit-details-marker { display: none; }
+.faq summary::after, .settings > summary::after {
+  content: ''; flex: none; width: 8px; height: 8px; margin: 0 4px 4px 0;
+  border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); transition: transform .2s;
+}
+.faq details[open] > summary::after, .settings[open] > summary::after { transform: rotate(-135deg); margin-bottom: -4px; }
+.settings > summary { cursor: pointer; }
 
 /* Game */
 .gh { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin: 4px 0 14px; }
@@ -128,7 +140,8 @@ footer a { color: var(--muted); }
 .awards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 14px; }
 .award { background: #faf8f4; border-radius: 14px; padding: 12px; }
 .award .big { font-size: 1.5rem; }
-.award b { display: block; }
+.award b, .award span.small { display: block; }
+.award b { margin-top: 2px; }
 .invite { background: linear-gradient(135deg, #5b3df5, #8a5cf6); color: #fff; }
 .invite .muted { color: #e4dcff; }
 .invite .btn { background: #fff; color: var(--brand); }

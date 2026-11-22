@@ -285,7 +285,9 @@ export async function onRequest(context) {
       if (!nick) return err(400, 'Pick a nickname');
       const members = await activeMembers(env, group.id);
       if (members.length >= MAX_MEMBERS) return err(409, `This group is full (${MAX_MEMBERS} people)`);
-      if (members.some((m) => m.name.toLowerCase() === nick.toLowerCase())) return err(409, 'Someone in this group already uses that name');
+      if (members.some((m) => m.name.toLowerCase() === nick.toLowerCase())) {
+        return err(409, "Someone in this group already uses that name. If it's you on another phone or browser, open Settings there and use “Copy my personal link” to sign in here.");
+      }
       const m = await newMember(env, group.id, nick);
       await touch(env, group);
       return json(m, 201);

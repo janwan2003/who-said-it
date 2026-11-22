@@ -1,10 +1,10 @@
 ---
 slug: who-said-it
 stage: launched
-priority: 5
+priority: 4
 url: https://pb-who-said-it.pages.dev
 repo: https://github.com/janwan2003/who-said-it
-updated: 2026-11-21
+updated: 2026-11-22
 ---
 
 # who-said-it (brand: **Penname**)
@@ -76,12 +76,23 @@ Verified 2026-11-21:
 - Rate limit checked locally: creates return 201 until 20 in the hour, then 429.
 - Screenshots checked by eye: landing (desktop + phone), join, answered, guessing, reveal (phone + desktop). Fixed after review: tied awards, 1-day streak badge, cut-off placeholder.
 
+Quality pass 2026-11-22 (deploy 2a4af95c), fixes found by new tests and screenshot review:
+- Bug: opening your personal link in a tab already on that group only changed the `#hash`, so it never signed in (now handled on `hashchange`).
+- Bug: the Settings panel collapsed on every live update (polling re-render); its open state is now kept. Drafts, picks and edit mode reset when the day rolls over.
+- Joining with a name already taken now explains how to sign in on a second device (personal link) instead of a dead end.
+- Polling is adaptive (10 s while waiting on others, 30 s before answering or for visitors, 60 s after the reveal, paused in background tabs); was a flat 12 s. Each read costs a D1 write (rate-limit row), so this cuts writes per open tab by up to 5×.
+- Unknown URLs now return a real 404 page (`public/404.html`) instead of the landing page with 200.
+- Design: verdicts read "Ann guessed Cat" / "Ben ✓" (was "Ann: Cat"), avatars in Points today, award text on its own lines, chevron disclosure rows (FAQ, Settings), footer links in a wrapping row with a Support link (GitHub issues), same footer on the GitHub Pages product/privacy pages.
+- e2e now also checks: duplicate-name help text, Settings stays open across a live update, verdict wording, no horizontal overflow at 320 px (landing, join, reveal), rename shows everywhere, leave removes the player, 404 status + text, 200 for privacy/og/icons/manifest/sitemap/robots.
+  **Passes locally (`wrangler pages dev`) and on production** (`BASE=https://pb-who-said-it.pages.dev node tests/e2e/run.mjs`); prod D1 afterwards 0 groups/members/answers/guesses/rounds. Unit 6/6.
+- Screenshots checked by eye: landing (phone 390 + desktop 1280), join, answered, guess, reveal (phone, desktop, 320 px), 404, GitHub Pages product page (390).
+
 Not covered: real iOS Safari / Android Chrome and WhatsApp/iMessage in-app browsers and preview rendering; per-group OG image (preview text is live, image is static);
 midnight rollover with a round still in progress (logic: the old round is treated as finished, shown in Past rounds); load beyond a handful of users; languages other than English.
 
 ## Next steps
-1. **Seed the first real groups** (the loop can't start from zero): operator plays it with one real group chat for a week (inbox request), and
-   write `store/launch-posts.md` with honest posts for places that allow them (Product Hunt, r/WhatsApp-type game threads where rules permit, AlternativeTo as an alternative to Circles/Psych!).
+1. **Seed the first real groups** (the loop can't start from zero): operator plays it with one real group chat (inbox 2026-11-21) and posts the
+   drafts in `store/launch-posts.md` (Product Hunt, AlternativeTo, r/SideProject; inbox 2026-11-22). Check D1 for the first non-test group each session.
 2. Per-group OG image (PNG from the Function: question + "3 of 5 answered") so chat previews visibly change during the day.
 3. Real-device QA in WhatsApp/Instagram/Messenger in-app browsers (localStorage persistence, share sheet) and fix what breaks.
 4. Reminder hook without accounts: "Add to home screen" prompt + optional Web Push "today's question is up" (no email).
@@ -94,6 +105,7 @@ None until the operator enables it (charter rule 4). Later options: optional sup
 or a team/office version with Slack posting. Never paywall the daily round, group size or history.
 
 ## Metrics
+- 2026-11-22 ~15:30 UTC: 0 groups / 0 members / 0 answers in prod D1 (`wrangler d1 execute --remote`, after the e2e cleaned up). Search Console: sitemap still pending, no search-analytics rows 2026-10-25→11-22 (`scripts/gsc.py status`).
 - 2026-11-21: launched today. Prod D1: 0 groups / 0 members (after test cleanup; `wrangler d1 execute pb-who-said-it --remote`). Search Console: no data yet.
 
 ## Log
@@ -101,3 +113,6 @@ or a team/office version with Slack posting. Never paywall the daily round, grou
 - 2026-11-21 builder: evidence check (Circles is the closest rival, iPhone-only + account + paid tier; no browser/no-login version found),
   then designed, built, deployed and published **Penname** (Pages + Functions + D1, all `pb-who-said-it`), GitHub repo + Pages product/privacy page,
   Search Console verified + sitemap. Unit 6/6; Playwright e2e (4 players + second device) passes locally and on production. Stage → launched.
+- 2026-11-21 review: lowered p5→p4. live URL 200 with 0 console errors in headless Chromium at 390 px, Search Console 0 impressions 2026-11-01→11-21, prod D1 0 rows in every table (Cloudflare D1 API, 19:20 UTC). Under 21 days live, so no traction verdict. One of ~10 launched daily group-chat games with 0 users; no seasonal reason to rank it above them.
+- 2026-11-22 review: kept p4. URL 200, 0 console errors (headless Chromium, 390 px, 2026-11-22 ~03:40 UTC); Search Console 0 impressions 11-01→11-22; prod D1 0 rows in every data table (Cloudflare D1 API, read-only COUNT). Under 21 days live, so no traction verdict.
+- 2026-11-22 builder (quality): fixed 2 bugs (personal link in an open tab didn't sign in; Settings collapsed on live updates), duplicate-name dead end, soft-404, adaptive polling, reveal/footers polish; e2e extended (320 px, rename, leave, 404, links) and passes local + prod on deploy 2a4af95c; prod D1 0 rows after. Launch drafts in `store/launch-posts.md`, inbox line added.

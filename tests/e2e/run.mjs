@@ -72,6 +72,7 @@ try {
   await ben.page.fill('#nick', 'ann');
   await ben.page.click('#join button');
   await ben.page.getByText('already uses that name').waitFor();
+  assert.match(await ben.page.locator('#jerr').innerText(), /personal link/, 'duplicate name explains the personal link');
   await ben.page.fill('#nick', 'Ben');
   await ben.page.click('#join button');
   await ben.page.locator('#ans').waitFor();
@@ -95,7 +96,13 @@ try {
   await answer(ben, A.Ben);
   await shot(ben, 'answered-phone');
   assert.equal(await ann.page.locator('[data-act=lock]').count(), 0, 'no early start with 2 answers');
+  // Ben opens Settings; a live update (Cat answering) must not collapse it.
+  await ben.page.locator('#settings summary').click();
+  assert.equal(await ben.page.locator('#settings[open]').count(), 1);
   await answer(cat, A.Cat);
+  await ben.page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+  await ben.page.getByText('3 of 4 answered').waitFor();
+  assert.equal(await ben.page.locator('#settings[open]').count(), 1, 'settings stay open after a live update');
   assert.match(await og(), /3 of 4 answered · 4 players so far/);
   // Answers stay secret: nobody's state contains another person's answer text.
   const benState = await ben.page.evaluate(async (gid) => {
@@ -161,6 +168,7 @@ try {
     assert.match(await card.locator('.author').innerText(), new RegExp(who));
   }
   assert.ok(reveal.includes('Deep water <b>at night</b>'), 'HTML in answers is shown as text');
+  assert.ok(reveal.includes('Ann guessed Cat') && reveal.includes('Ben ✓'), 'verdicts read as sentences');
   // Scores: Ben 2 right + fooled 1 (Ann) = 3; Cat 2 right + fooled 1 = 3; Ann 0 right + fooled 0 = 0.
   const pts = await ann.page.evaluate(async (gid) => {
     const r = await fetch('/api/groups/' + gid, { headers: { 'x-token': localStorage.getItem('penname:' + gid) } });
@@ -197,6 +205,43 @@ try {
   // Landing on a phone
   await ann2.page.goto(BASE + '/');
   await shot(ann2, 'landing-phone');
+
+  // Small phones (320 px): nothing wider than the screen on the landing, join and reveal pages.
+  const tiny = await person('Tiny', { ...PHONE, viewport: { width: 320, height: 640 } });
+  const overflow = () => tiny.page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  await tiny.page.goto(BASE + '/');
+  assert.ok((await overflow()) <= 0, 'landing fits 320 px');
+  await tiny.page.goto(groupUrl);
+  await tiny.page.locator('#join').waitFor();
+  assert.ok((await overflow()) <= 0, 'join fits 320 px');
+  await tiny.page.goto(personal);
+  await tiny.page.locator('.reveal').waitFor();
+  assert.ok((await overflow()) <= 0, 'reveal fits 320 px');
+  await shot(tiny, 'reveal-320');
+  step('320 px layouts fit');
+
+  // Rename shows everywhere; leaving removes the player.
+  await cat.page.reload();
+  await cat.page.locator('#settings summary').click();
+  await cat.page.fill('#newnick', 'Kat');
+  await cat.page.click('#rename button');
+  await cat.page.getByText("You're Kat").waitFor();
+  assert.match(await cat.page.locator('.reveal .ans', { hasText: 'Deep water' }).locator('.author').innerText(), /Kat/);
+  await dan.page.reload();
+  await dan.page.locator('#settings summary').click();
+  await dan.page.click('[data-act=leave]');
+  await dan.page.locator('#join').waitFor();
+  assert.match(await dan.page.locator('.gh').innerText(), /3 players/);
+  step('rename and leave work');
+
+  // Unknown pages are real 404s, not the landing page.
+  const nf = await fetch(BASE + '/no-such-page');
+  assert.equal(nf.status, 404);
+  assert.match(await nf.text(), /Page not found/);
+  for (const href of ['/privacy', '/og.png', '/icon-180.png', '/manifest.webmanifest', '/sitemap.xml', '/robots.txt']) {
+    assert.equal((await fetch(BASE + href)).status, 200, href);
+  }
+  step('404 page and static links ok');
 
   // 7. Delete
   await ann.page.click('[data-act=delete]');
